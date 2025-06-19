@@ -82,7 +82,8 @@ def admin_dashboard():
     
     all_users = User.query.all()
     all_lots = ParkingLot.query.all()
-    return render_template('admin_dashboard.html', users=all_users, lots=all_lots)
+    all_reservations = Reservation.query.order_by(Reservation.parking_timestamp.desc()).all()
+    return render_template('admin_dashboard.html', users=all_users, lots=all_lots, reservations=all_reservations)
 
 @app.route('/user/dashboard')
 @login_required
@@ -238,6 +239,33 @@ def release_spot(reservation_id):
 
     flash(f'Spot {spot.spot_number} has been released. Thank you!', 'success')
     return redirect(url_for('user_dashboard'))
+
+
+@app.route('/user/history')
+@login_required
+def parking_history():
+    if current_user.role != 'User':
+        return "Access Denied", 403
+    
+    completed_reservations = Reservation.query.filter(
+        Reservation.user_id == current_user.id,
+        Reservation.leaving_timestamp.isnot(None)
+    ).order_by(Reservation.parking_timestamp.desc()).all()
+
+    return render_template('parking_history.html', reservations=completed_reservations)
+
+
+@app.route('/admin/user_history/<int:user_id>')
+@login_required
+def admin_view_user_history(user_id):
+    if current_user.role != 'Admin':
+        return "Access Denied", 403
+    
+    target_user = User.query.get_or_404(user_id)
+
+    user_reservations = Reservation.query.filter_by(user_id=target_user.id).order_by(Reservation.parking_timestamp.desc()).all()
+
+    return render_template('admin_view_user_history.html', target_user=target_user, reservations=user_reservations)
 
 
 @app.route('/')

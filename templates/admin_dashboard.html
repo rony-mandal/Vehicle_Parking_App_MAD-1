@@ -6,7 +6,7 @@
   </head>
   <body>
     {% include '_flashes.html' %}
-    
+
     <h1>Admin Dashboard</h1>
     <p>
       Welcome, {{ current_user.full_name }}! |
@@ -46,10 +46,10 @@
       <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px">
         {% for spot in lot.spots %}
         <span
-          style="border: 1px solid green; padding: 5px; background-color: {% if spot.status == 'A' %}lightgreen{% else %}lightcoral{% endif %};"
+          style="border: 1px solid green; padding: 5px; background-color: {{ 'lightgreen' if spot.status == 'A' else 'lightcoral'}};"
         >
-          Spot {{ spot.spot_number }} - {% if spot.status == 'A' %}Available{% else
-          %}Occupied{% endif %}
+          Spot {{ spot.spot_number }} - {% if spot.status == 'A' %}Available{%
+          else %}Occupied{% endif %}
         </span>
         {% endfor %}
       </div>
@@ -71,15 +71,61 @@
         </tr>
       </thead>
       <tbody>
-        {% for user in users %}
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.full_name }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            {% if user.role == 'User' %}
+                <a href="{{ url_for('admin_view_user_history', user_id=user.id) }}">View History</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+    </table>
+
+    <hr />
+
+    <h2>All Parking Records</h2>
+    <table border="1">
+      <thead>
         <tr>
-          <td>{{ user.id }}</td>
-          <td>{{ user.full_name }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.role }}</td>
+          <th>User</th>
+          <th>Lot</th>
+          <th>Spot</th>
+          <th>Parked At</th>
+          <th>Left At</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in reservations %}
+        <tr>
+          <td>{{ res.user.full_name }} ({{ res.user.username }})</td>
+          <td>{{ res.spot.lot.prime_location_name }}</td>
+          <td>{{ res.spot.spot_number }}</td>
+          <td>{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if res.leaving_timestamp %} {{
+            res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }} {% else %}
+            Currently Parked {% endif %}
+          </td>
+          <td>
+            {% if res.leaving_timestamp %} Completed {% else %} Active {% endif
+            %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6">No parking records found.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+
+
   </body>
 </html>

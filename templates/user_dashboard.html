@@ -1,56 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>User Dashboard</title>
-</head>
-<body>
-    
+  </head>
+  <body>
     <header>
       <h1>User Dashboard</h1>
-      <p>Welcome, {{ current_user.full_name }}! | <a href="{{ url_for('logout') }}">Logout</a></p>
+      <p>
+        Welcome, {{ current_user.full_name }}! |
+        <a href="{{ url_for('parking_history') }}">My Parking History</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </p>
       <hr />
     </header>
-    
+
     {% include '_flashes.html' %}
     <h2>My Parking Status</h2>
     {% if active_reservation %}
-        <p>You are currently parked!</p>
-        <ul>
-            <li>Lot: {{ active_reservation.spot.lot.prime_location_name }}</li>
-            <li>Spot Number: {{ active_reservation.spot.spot_number }}</li>
-            <li>Parked Since: {{ active_reservation.parking_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</li>
-        </ul>
-        <form method="POST" action="{{ url_for('release_spot', reservation_id=active_reservation.id) }}">
-            <input type="submit" value="Release My Spot">
-        </form>
+    <p>You are currently parked!</p>
+    <ul>
+      <li>Lot: {{ active_reservation.spot.lot.prime_location_name }}</li>
+      <li>Spot Number: {{ active_reservation.spot.spot_number }}</li>
+      <li>
+        Parked Since: {{ active_reservation.parking_timestamp.strftime('%Y-%m-%d
+        %H:%M:%S') }}
+      </li>
+    </ul>
+    <form
+      method="POST"
+      action="{{ url_for('release_spot', reservation_id=active_reservation.id) }}"
+    >
+      <input type="submit" value="Release My Spot" />
+    </form>
     {% else %}
-        <p>You are not currently parked. Choose a lot below to park your vehicle.</p>
-        <h3>Available Parking Lots</h3>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Location</th>
-                    <th>Address</th>
-                    <th>Price</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lot in lots %}
-                <tr>
-                    <td>{{ lot.prime_location_name }}</td>
-                    <td>{{ lot.address }}</td>
-                    <td>${{ lot.price }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('park_here', lot_id=lot.id) }}">
-                            <input type="submit" value="Park Here">
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <p>
+      You are not currently parked. Choose a lot below to park your vehicle.
+    </p>
+    <h3>Available Parking Lots</h3>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Address</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lot in lots %}
+        <tr>
+          <td>{{ lot.prime_location_name }}</td>
+          <td>{{ lot.address }}</td>
+          <td>${{ lot.price }}</td>
+          <td>
+            <form
+              method="POST"
+              action="{{ url_for('park_here', lot_id=lot.id) }}"
+            >
+              <input type="submit" value="Park Here" />
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     {% endif %}
-</body>
+  </body>
 </html>
