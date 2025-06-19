@@ -1,6 +1,7 @@
+import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from models.database import db
-from models.database import User, ParkingLot, ParkingSpot
+from models.database import User, ParkingLot, ParkingSpot, Reservation
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -45,15 +46,19 @@ def register():
 def login():
     if request.method == 'POST':
         user = User.query.filter_by(username=request.form.get('username')).first()
-        # Checking entry
-        if not user or not check_password_hash(user.password, request.form.get('password')):
-            flash("Invalid username or password", 'danger')
-            return redirect(url_for('login'))
+
+
+        # case 1: user does not exist.
+        if not user:
+            flash('No account found with that email. Please register first.', 'danger')
+            return redirect(url_for('register')) #redirect to register page
+        # case 2: user exists, check the password.
+        if not check_password_hash(user.password, request.form.get('password')):
+            flash('Incorrect password. Please try again.', 'danger')
+            return redirect(url_for('login')) #try again
         
-        # Logging user
         login_user(user) 
-        
-        # Redirect based on role 
+ 
         if user.role == 'Admin':
             return redirect(url_for('admin_dashboard'))
         else:
@@ -82,7 +87,13 @@ def admin_dashboard():
 @app.route('/user/dashboard')
 @login_required
 def user_dashboard():
-    return f"<h1>Welcome to your Dashboard, {current_user.full_name}!</h1>"
+    if current_user.role != 'User': #already done at login logic. not necessary, but still..
+        return "Access Denied", 403
+    
+    active_res = Reservation.query.filter_by(user_id=current_user.id, leaving_timestamp=None).first()
+    all_lots = ParkingLot.query.all()
+
+    return render_template('user_dashboard.html', lots=all_lots, active_reservation=active_res)
 
 
 @app.route('/admin/add_lot', methods=['GET', 'POST'])
@@ -176,6 +187,58 @@ def edit_lot(lot_id):
         return redirect(url_for('admin_dashboard'))
 
     return render_template('edit_lot.html', lot=lot_to_edit)
+
+# park_here route(for user)
+@app.route('/user/park/<int:lot_id>', methods=['POST'])
+@login_required
+def park_here(lot_id):
+    if current_user.role != 'User':
+        return "Access Denied", 403
+
+    # checks if user already parked
+    if Reservation.query.filter_by(user_id=current_user.id, leaving_timestamp=None).first():
+        flash('You are already parked somewhere.', 'danger')
+        return redirect(url_for('user_dashboard'))
+
+    # finding first available spot
+    first_available_spot = ParkingSpot.query.filter_by(lot_id=lot_id, status='A').order_by(ParkingSpot.spot_number).first()
+
+    if not first_available_spot:
+        flash('Sorry, this parking lot is full.', 'danger')
+        return redirect(url_for('user_dashboard'))
+
+    # occupy spot & create record 
+    first_available_spot.status = 'O'
+    new_reservation = Reservation(
+        user_id=current_user.id,
+        spot_id=first_available_spot.id,
+        parking_timestamp=datetime.datetime.now()
+    )
+    db.session.add(new_reservation)
+    db.session.commit()
+
+    flash(f'Success! You have been assigned Spot {first_available_spot.spot_number} in {first_available_spot.lot.prime_location_name}.', 'success')
+    return redirect(url_for('user_dashboard'))
+
+#release spot route
+@app.route('/user/release/<int:reservation_id>', methods=['POST'])
+@login_required
+def release_spot(reservation_id):
+    reservation_to_release = Reservation.query.get_or_404(reservation_id)
+
+    #security check
+    if reservation_to_release.user_id != current_user.id:
+        return "Access Denied", 403
+
+    # update spot status & reservation record
+    spot = ParkingSpot.query.get(reservation_to_release.spot_id)
+    spot.status = 'A'
+    reservation_to_release.leaving_timestamp = datetime.datetime.now()
+    db.session.commit()
+
+    flash(f'Spot {spot.spot_number} has been released. Thank you!', 'success')
+    return redirect(url_for('user_dashboard'))
+
 
 @app.route('/')
 def index():

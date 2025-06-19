@@ -5,14 +5,8 @@
     <title>Admin Dashboard</title>
   </head>
   <body>
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
-    <ul class="flashes">
-      {% for category, message in messages %}
-      <li class="{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %} {% endwith %}
+    {% include '_flashes.html' %}
+    
     <h1>Admin Dashboard</h1>
     <p>
       Welcome, {{ current_user.full_name }}! |

@@ -33,3 +33,5 @@ class Reservation(db.Model):
     parking_timestamp = db.Column(db.DateTime, nullable=False)
     leaving_timestamp = db.Column(db.DateTime, nullable=True) 
     parking_cost = db.Column(db.Float, nullable=True) 
+    spot = db.relationship('ParkingSpot')
+    user = db.relationship('User')
