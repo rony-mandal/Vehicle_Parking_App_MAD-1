@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False) # Using email as username
+    username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     full_name = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='User') 
@@ -13,15 +13,18 @@ class User(db.Model, UserMixin):
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prime_location_name = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False) # Price per unit time
+    price = db.Column(db.Float, nullable=False) 
     address = db.Column(db.String(200), nullable=False)
     pin_code = db.Column(db.String(10), nullable=False)
     maximum_number_of_spots = db.Column(db.Integer, nullable=False)
+    spots = db.relationship('ParkingSpot', backref='lot', lazy=True, cascade="all, delete-orphan")
 
 class ParkingSpot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     lot_id = db.Column(db.Integer, db.ForeignKey('parking_lot.id'), nullable=False) 
+    spot_number = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(1), nullable=False, default='A')
+    __table_args__ = (db.UniqueConstraint('lot_id', 'spot_number', name='unique_spot_in_lot'),)
 
 class Reservation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
