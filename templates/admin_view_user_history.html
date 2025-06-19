@@ -9,33 +9,34 @@
     <p><strong>Email:</strong> {{ target_user.username }}</p>
     <p><a href="{{ url_for('admin_dashboard') }}">Back to Main Dashboard</a></p>
     <hr>
-
+    
     <h3>All Reservations</h3>
-    <table border="1">
+    <table border="1" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr>
-                <th>Lot</th>
-                <th>Spot</th>
-                <th>Parked At</th>
-                <th>Left At</th>
-                <th>Duration</th>
-                <th>Status</th>
+            <tr style="text-align: left;">
+                <th style="padding: 8px;">Lot</th>
+                <th style="padding: 8px;">Spot</th>
+                <th style="padding: 8px;">Parked At</th>
+                <th style="padding: 8px;">Left At</th>
+                <th style="padding: 8px;">Duration</th>
+                <th style="padding: 8px;">Status</th>
+                <th style="padding: 8px;">Cost</th>
             </tr>
         </thead>
         <tbody>
             {% for res in reservations %}
             <tr>
-                <td>{{ res.spot.lot.prime_location_name }}</td>
-                <td>{{ res.spot.spot_number }}</td>
-                <td>{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                <td>
+                <td style="padding: 8px;">{{ res.spot.lot.prime_location_name if res.spot else 'DELETED LOT' }}</td>
+                <td style="padding: 8px;">{{ res.spot.spot_number if res.spot else 'N/A' }}</td>
+                <td style="padding: 8px;">{{ res.parking_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td style="padding: 8px;">
                     {% if res.leaving_timestamp %}
                         {{ res.leaving_timestamp.strftime('%Y-%m-%d %H:%M') }}
                     {% else %}
                         Currently Parked
                     {% endif %}
                 </td>
-                <td>
+                <td style="padding: 8px;">
                     {% if res.leaving_timestamp and res.parking_timestamp %}
                         {% set duration = res.leaving_timestamp - res.parking_timestamp %}
                         {% set hours = duration.total_seconds() // 3600 %}
@@ -45,17 +46,24 @@
                         N/A
                     {% endif %}
                 </td>
-                <td>
+                <td style="padding: 8px;">
                     {% if res.leaving_timestamp %}
                         Completed
                     {% else %}
                         Active
                     {% endif %}
                 </td>
+                <td style="padding: 8px;">
+                    {% if res.parking_cost is not none %}
+                        ${{ "%.2f"|format(res.parking_cost) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="6">This user has no parking records.</td>
+                <td colspan="7" style="padding: 8px; text-align: center;">This user has no parking records.</td>
             </tr>
             {% endfor %}
         </tbody>

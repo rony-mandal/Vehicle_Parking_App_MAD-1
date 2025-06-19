@@ -52,7 +52,7 @@
         <tr>
           <td>{{ lot.prime_location_name }}</td>
           <td>{{ lot.address }}</td>
-          <td>${{ lot.price }}</td>
+          <td>${{ "%.2f"|format(lot.price) }}</td>
           <td>
             <form
               method="POST"
