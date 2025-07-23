@@ -38,7 +38,7 @@
       <h4>{{ lot.prime_location_name }} ({{ lot.pin_code }})</h4>
       <ul>
         <li>Address: {{ lot.address }}</li>
-        <li>Price per unit time: ${{ lot.price }}</li>
+        <li>Price per minute: ₹{{ lot.price }}</li>
         <li>Capacity: {{ lot.maximum_number_of_spots }} spots</li>
       </ul>
 
@@ -121,7 +121,7 @@
           </td>
           <td>
             {% if res.parking_cost is not none %}
-                ${{ "%.2f"|format(res.parking_cost) }}
+                ₹{{ "%.2f"|format(res.parking_cost) }}
             {% else %}
                 N/A
             {% endif %}

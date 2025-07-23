@@ -55,7 +55,7 @@
                 </td>
                 <td style="padding: 8px;">
                     {% if res.parking_cost is not none %}
-                        ${{ "%.2f"|format(res.parking_cost) }}
+                        ₹{{ "%.2f"|format(res.parking_cost) }}
                     {% else %}
                         N/A
                     {% endif %}

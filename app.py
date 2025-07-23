@@ -145,7 +145,6 @@ def delete_lot(lot_id):
     return redirect(url_for('admin_dashboard'))
 
 
-# --- THIS IS THE FULLY CORRECTED AND ROBUST VERSION OF THE FUNCTION ---
 @app.route('/admin/edit_lot/<int:lot_id>', methods=['GET', 'POST'])
 @login_required
 def edit_lot(lot_id):
@@ -175,7 +174,6 @@ def edit_lot(lot_id):
         elif new_capacity < old_capacity:
             spots_to_remove_count = old_capacity - new_capacity
             
-            # Find spots that are available AND have no reservation history.
             spots_ordered = ParkingSpot.query.filter_by(lot_id=lot_to_edit.id, status='A').order_by(ParkingSpot.spot_number.desc()).all()
             
             safe_to_delete = []
