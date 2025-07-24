@@ -248,7 +248,7 @@ def release_spot(reservation_id):
 
     db.session.commit()
 
-    flash(f'Spot {spot.spot_number} has been released. Total cost: ${total_cost:.2f}. Thank you!', 'success')
+    flash(f'Spot {spot.spot_number} has been released. Total cost: ₹{total_cost:.2f}. Thank you!', 'success')
     return redirect(url_for('user_dashboard'))
 
 
